@@ -100,7 +100,7 @@ function parseCPAleadResponse(data) {
     
     console.log(`📊 [CPAlead] Parsing ${offersArray.length} offers...`);
     
-    return offersArray.map(offer => {
+    const filteredOffers = offersArray.map(offer => {
         const offerType = offer.payout_type || offer.type || 'CPI';
         
         return {
@@ -118,7 +118,31 @@ function parseCPAleadResponse(data) {
             duration: estimateDuration(offerType),
             requirements: offer.conversion || offer.description || 'Complete the offer requirements'
         };
+    }).filter(offer => {
+        // FILTER OUT BAD OFFERS
+        // Remove offers with no valid link
+        if (!offer.link || offer.link === '#' || offer.link === 'undefined') {
+            console.log('🚫 Filtered - No valid link:', offer.name);
+            return false;
+        }
+        
+        // Remove offers that are clearly desktop-only
+        if (offer.device && offer.device.toLowerCase() === 'desktop') {
+            console.log('🚫 Filtered - Desktop only:', offer.name);
+            return false;
+        }
+        
+        // Remove offers with suspiciously low payout (often broken)
+        if (parseFloat(offer.payout) < 0.10) {
+            console.log('🚫 Filtered - Very low payout:', offer.name, offer.payout);
+            return false;
+        }
+        
+        return true;
     });
+    
+    console.log(`✅ Filtered to ${filteredOffers.length} viable offers`);
+    return filteredOffers;
 }
 
 // ======================================
@@ -126,6 +150,7 @@ function parseCPAleadResponse(data) {
 // ======================================
 
 function displayCPAleadOffers(offers) {
+    logFailedOffers(offers);
     console.log('🎨 [CPAlead] Displaying', offers.length, 'offers');
     
     const container = document.getElementById('cpalead-offers');
@@ -167,6 +192,7 @@ function displayCPAleadOffers(offers) {
                 
                 return `
     <div class="card" style="cursor: pointer; border-left: 4px solid #667eea; transition: all 0.3s ease;" 
+       onclick="alert('Click detected!'); trackAndOpenCPAleadOffer('${offer.id}', '${escapeHtml(offer.link)}', JSON.parse('${offerJson}'))"
          onclick="trackAndOpenCPAleadOffer('${offer.id}', '${escapeHtml(offer.link)}', JSON.parse('${offerJson}'))">
         <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;">
             <div style="font-size: 2.5rem; flex-shrink: 0;">${offer.icon}</div>
@@ -400,3 +426,16 @@ window.debugCPAlead = async function() {
 console.log('✅ CPAlead integration loaded - LAZY LOADING ENABLED');
 
 // REMOVE ANY AUTO-LOADING CODE - NO AUTOMATIC CALLS!
+
+// Add this function to your cpalead.js file (put it at the bottom)
+function logFailedOffers(offers) {
+    console.log('🔍 Checking offer viability...');
+    offers.forEach((offer, index) => {
+        console.log(`Offer ${index + 1}: ${offer.name}`);
+        console.log('  - Link:', offer.link);
+        console.log('  - Type:', offer.type);
+        console.log('  - Countries:', offer.country);
+        console.log('  - Device:', offer.device);
+        console.log('---');
+    });
+}

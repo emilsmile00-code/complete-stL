@@ -342,7 +342,7 @@ function creditUserForOffer(offerId, amount) {
     window.paymentSystem.addPendingEarnings(amount, 'OGAds Offer', offerId);
 }
 
-// DEPRECATED: Old function kept for backwards compatibility
+// DEPRECATED: Old function kept for backwards compatibility - MOBILE FIXED
 window.openOGAdsOffer = function(offerId, offerLink) {
     console.warn('⚠️ DEPRECATED: Use trackAndOpenOGAdsOffer instead for proper tracking');
     console.log('🎯 Opening offer:', offerId);
@@ -359,8 +359,14 @@ window.openOGAdsOffer = function(offerId, offerLink) {
             console.log('🔍 Tracking URL with user ID:', trackingUrl);
         }
         
-        // Open in new window with tracking
-        const newWindow = window.open(trackingUrl, '_blank', 'noopener,noreferrer');
+        // Mobile-friendly approach: use anchor click
+        const link = document.createElement('a');
+        link.href = trackingUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
         showNotification('Offer opened! Complete it to earn rewards.', 'success');
         console.log(`📝 Offer clicked: ${offerId}, User: ${window.currentUser?.id}`);

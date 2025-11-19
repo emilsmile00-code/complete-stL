@@ -1,5 +1,5 @@
 // ======================================
-// WALL TEMPLATE FUNCTIONS - FIXED VERSION
+// WALL TEMPLATE FUNCTIONS - COMPLETE FIXED VERSION
 // ======================================
 window.currentTemplate = null;
 window.surveyOptions = ['Option 1', 'Option 2', 'Option 3'];
@@ -36,14 +36,14 @@ window.selectTemplate = function(templateId) {
 function displayAffiliateOffers() {
     // Check affiliate offers
     const offers = checkAffiliateOffers();
-    console.log('🔄 Displaying affiliate offers:', offers.length);
+    console.log('📄 Displaying affiliate offers:', offers.length);
     
     // Always show the affiliate section, even if empty
     if (!offers || offers.length === 0) {
         console.log('❌ No affiliate offers to display, showing empty state');
         return `
             <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">
-                <div class="icon" style="font-size: 4rem; opacity: 0.3; margin-bottom: 20px;">📭</div>
+                <div class="icon" style="font-size: 4rem; opacity: 0.3; margin-bottom: 20px;">🔭</div>
                 <h3 style="color: #888; margin-bottom: 10px;">No affiliate offers available</h3>
                 <p style="color: #666;">Check back later for partner offers!</p>
             </div>
@@ -87,13 +87,19 @@ function displayAffiliateOffers() {
     return affiliateHtml;
 }
 
-// Add this function to handle affiliate offer clicks
+// Add this function to handle affiliate offer clicks - MOBILE FIXED
 window.openAffiliateOffer = function(title, url) {
     console.log('🎯 Opening affiliate offer:', title);
     
     if (url && url !== '#') {
-        // Open in new window
-        window.open(url, '_blank', 'noopener,noreferrer');
+        // Mobile-friendly approach: use anchor click instead of window.open
+        const link = document.createElement('a');
+        link.href = url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
         
         if (typeof showNotification === 'function') {
             showNotification(`Opening: ${title}`, 'success');
@@ -112,7 +118,7 @@ function escapeHtml(text) {
 }
 
 function loadPublicWall() {
-    console.log('🔄 Loading public wall with all offers...');
+    console.log('📄 Loading public wall with all offers...');
     
     const wallContent = document.getElementById('wall-content');
     
@@ -150,7 +156,25 @@ function loadPublicWall() {
             <div class="grid grid-2" id="affiliate-offers">
                 ${affiliateOffersHtml}
             </div>
+
+            <!-- KiwiWall Offers Section -->
+             <h2 style="color: #ffd700; margin: 50px 0 20px 0; font-size: 2rem;">🏆 KiwiWall Offers</h2>
+             <div id="kiwiwall-offers">
+                 <div style="text-align: center; color: #888; padding: 40px;">
+                     <div class="loading-spinner"></div>
+                     <p style="margin-top: 20px;">Loading KiwiWall offers...</p>
+                </div>
+             </div>
             
+            <!-- ADD THIS NEW CPAGRIP SECTION -->
+            <h2 style="color: #ff6b6b; margin: 50px 0 30px 0; font-size: 2rem;">🔥 CPAgrip Offers</h2>
+            <div class="grid grid-2" id="cpagrip-offers">
+                <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">
+                    <div class="loading-spinner"></div>
+                    <p style="margin-top: 20px;">Loading CPAgrip offers...</p>
+                </div>
+            </div>   
+
             <!-- CPAlead Offers Container -->
             <h2 style="color: #667eea; margin: 50px 0 30px 0; font-size: 2rem;">🎯 Sponsored Offers</h2>
             <div class="grid grid-2" id="cpalead-offers">
@@ -161,7 +185,7 @@ function loadPublicWall() {
             </div>
         </div>
     `;
-    
+          
     console.log('✅ [Wall] DOM structure created with all offer sections');
     
     // Load CPAlead offers
@@ -172,6 +196,26 @@ function loadPublicWall() {
             window.loadCPAleadOffers();
         }
     }, 300);
+
+    // Load KiwiWall offers - THIS WAS THE MISSING PIECE!
+    setTimeout(() => {
+        const kiwiwallContainer = document.getElementById('kiwiwall-offers');
+        if (kiwiwallContainer && typeof window.loadKiwiwallOffers === 'function') {
+            console.log('🚀 [Wall] Calling loadKiwiwallOffers...');
+            window.loadKiwiwallOffers();
+        } else {
+            console.error('❌ [Wall] KiwiWall container or function not found');
+        }
+    }, 500);
+
+    // Load CPAgrip offers
+    setTimeout(() => {
+        const cpagripContainer = document.getElementById('cpagrip-offers');
+        if (cpagripContainer && typeof window.loadCPAgripOffers === 'function') {
+            console.log('🚀 [Wall] Calling loadCPAgripOffers...');
+            window.loadCPAgripOffers();
+        }
+    }, 700);
 }
 
 // Initialize wallItems if it doesn't exist
@@ -195,7 +239,7 @@ window.openWallItem = function(index) {
 
 // Add this function to manually trigger CPAlead offers
 window.loadCPAleadOffersManually = function() {
-    console.log('🔄 Manually loading CPAlead offers...');
+    console.log('📄 Manually loading CPAlead offers...');
     if (typeof window.loadCPAleadOffers === 'function') {
         window.loadCPAleadOffers();
     } else {

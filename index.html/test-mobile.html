@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mobile Click Test</title>
+    <style>
+        body { background: #1a202c; color: white; font-family: Arial; padding: 20px; }
+        .card { 
+            background: #2d3748; 
+            padding: 20px; 
+            margin: 15px 0; 
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+        }
+        .card:active { background: #4a5568; }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Mobile Click Test</h1>
+    
+    <div class="card" onclick="testClick1()">
+        <h3>Test 1: Direct window.open</h3>
+        <p>Standard click method</p>
+    </div>
+
+    <div class="card" onclick="testClick2()">
+        <h3>Test 2: Anchor tag method</h3>
+        <p>Creates a link and clicks it</p>
+    </div>
+
+    <div class="card" onclick="testClick3()">
+        <h3>Test 3: Location redirect</h3>
+        <p>Navigates current page</p>
+    </div>
+
+    <script>
+        function testClick1() {
+            alert('Test 1: Opening window...');
+            window.open('https://www.example.com', '_blank');
+        }
+
+        function testClick2() {
+            alert('Test 2: Creating link...');
+            const link = document.createElement('a');
+            link.href = 'https://www.example.com';
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function testClick3() {
+            alert('Test 3: Redirecting...');
+            window.location.href = 'https://www.example.com';
+        }
+    </script>
+</body>
+</html>

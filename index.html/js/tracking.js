@@ -162,7 +162,7 @@ window.trackConversion = async function(offerData, action = 'click') {
 // Replace your existing openOGAdsOffer, openAffiliateOffer, etc.
 // ==============================================
 
-// Track and open OGAds offer
+// Track and open OGAds offer - MOBILE FIXED
 window.trackAndOpenOGAdsOffer = async function(offerId, offerLink, offerData) {
     console.log('🔵 Opening OGAds offer:', offerId);
     
@@ -173,50 +173,137 @@ window.trackAndOpenOGAdsOffer = async function(offerId, offerLink, offerData) {
         ...offerData
     }, 'click');
     
+    let finalUrl = offerLink;
     if (tracking) {
         // Replace tracking tokens in URL
-        let finalUrl = offerLink;
         if (finalUrl.includes('{aff_sub}')) {
             finalUrl = finalUrl.replace(/{aff_sub}/g, tracking.sub_id);
         }
         if (finalUrl.includes('{aff_click_id}')) {
             finalUrl = finalUrl.replace(/{aff_click_id}/g, tracking.click_id);
         }
-        
         console.log('🔗 Opening URL with tracking:', finalUrl);
-        window.open(finalUrl, '_blank');
-    } else {
-        // Fallback - open without tracking
-        window.open(offerLink, '_blank');
     }
+    
+    // Mobile-friendly approach: use anchor click
+    const link = document.createElement('a');
+    link.href = finalUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 };
 
-// Track and open CPAlead offer
+// Track and open CPAlead offer - MOBILE FIXED ENHANCED
 window.trackAndOpenCPAleadOffer = async function(offerId, offerLink, offerData) {
     console.log('🟣 Opening CPAlead offer:', offerId);
     
-    const tracking = await window.trackConversion({
-        offer_id: offerId,
-        network: 'cpalead',
-        ...offerData
-    }, 'click');
-    
-    if (tracking) {
-        let finalUrl = offerLink;
-        if (finalUrl.includes('{subid}')) {
-            finalUrl = finalUrl.replace(/{subid}/g, tracking.sub_id);
+    // MOBILE CHECK: Validate the link first
+    if (!offerLink || offerLink === '#' || offerLink === 'undefined' || offerLink.includes('javascript:')) {
+        console.warn('❌ Invalid offer link:', offerLink);
+        if (typeof showNotification === 'function') {
+            showNotification('This offer is not available on mobile. Try on desktop.', 'error');
+        } else {
+            alert('📱 This offer is not available on mobile. Try on desktop or check back later.');
         }
-        if (finalUrl.includes('{click_id}')) {
-            finalUrl = finalUrl.replace(/{click_id}/g, tracking.click_id);
+        return;
+    }
+    
+    // Prevent multiple rapid clicks
+    if (window.cpaLeadClickInProgress) {
+        console.log('⏳ Click already in progress...');
+        return;
+    }
+    window.cpaLeadClickInProgress = true;
+    
+    setTimeout(() => {
+        window.cpaLeadClickInProgress = false;
+    }, 3000);
+    
+    try {
+        const tracking = await window.trackConversion({
+            offer_id: offerId,
+            network: 'cpalead',
+            ...offerData
+        }, 'click');
+        
+        let finalUrl = offerLink;
+        if (tracking) {
+            if (finalUrl.includes('{subid}')) {
+                finalUrl = finalUrl.replace(/{subid}/g, tracking.sub_id);
+            }
+            if (finalUrl.includes('{click_id}')) {
+                finalUrl = finalUrl.replace(/{click_id}/g, tracking.click_id);
+            }
         }
         
-        window.open(finalUrl, '_blank');
-    } else {
-        window.open(offerLink, '_blank');
+        console.log('🔗 Final URL:', finalUrl);
+        
+        // MOBILE-FRIENDLY APPROACH: Multiple fallbacks
+        let successfullyOpened = false;
+        
+        // Method 1: Anchor click (most reliable for mobile)
+        try {
+            const link = document.createElement('a');
+            link.href = finalUrl;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            
+            // Trigger click
+            link.click();
+            
+            // Clean up
+            setTimeout(() => {
+                if (document.body.contains(link)) {
+                    document.body.removeChild(link);
+                }
+            }, 1000);
+            
+            successfullyOpened = true;
+            console.log('✅ Method 1 (Anchor) successful');
+            
+        } catch (e) {
+            console.log('❌ Method 1 failed:', e);
+        }
+        
+        // Method 2: Direct window.open with timeout
+        if (!successfullyOpened) {
+            setTimeout(() => {
+                try {
+                    const newWindow = window.open(finalUrl, '_blank');
+                    if (newWindow && !newWindow.closed) {
+                        console.log('✅ Method 2 (Window.open) successful');
+                    } else {
+                        console.log('❌ Method 2 failed - popup blocked');
+                        // Method 3: Final fallback - redirect current page
+                        window.location.href = finalUrl;
+                    }
+                } catch (e) {
+                    console.log('❌ Method 2 error:', e);
+                }
+            }, 100);
+        }
+        
+        // Show success message
+        if (typeof showNotification === 'function') {
+            showNotification('Offer opened! Complete it to earn rewards.', 'success');
+        }
+        
+    } catch (error) {
+        console.error('💥 Error opening CPAlead offer:', error);
+        
+        if (typeof showNotification === 'function') {
+            showNotification('Error opening offer. Please try again.', 'error');
+        } else {
+            alert('Error opening offer. Please try again.');
+        }
     }
 };
 
-// Track and open affiliate offer (TopOfferzz, etc.)
+// Track and open affiliate offer (TopOfferzz, etc.) - MOBILE FIXED
 window.trackAndOpenAffiliateOffer = async function(offerTitle, offerUrl, offerData) {
     console.log('🟡 Opening affiliate offer:', offerTitle);
     
@@ -227,17 +314,22 @@ window.trackAndOpenAffiliateOffer = async function(offerTitle, offerUrl, offerDa
         ...offerData
     }, 'click');
     
+    let finalUrl = offerUrl;
     if (tracking) {
-        let finalUrl = offerUrl;
         // Replace common tracking tokens
         finalUrl = finalUrl.replace(/{replace_it}/g, tracking.click_id);
         finalUrl = finalUrl.replace(/{sub_aff_id}/g, tracking.sub_id);
         finalUrl = finalUrl.replace(/{aff_click_id}/g, tracking.click_id);
-        
-        window.open(finalUrl, '_blank');
-    } else {
-        window.open(offerUrl, '_blank');
     }
+    
+    // Mobile-friendly approach: use anchor click
+    const link = document.createElement('a');
+    link.href = finalUrl;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 };
 
 // ==============================================
