@@ -192,7 +192,6 @@ function displayCPAleadOffers(offers) {
                 
                 return `
     <div class="card" style="cursor: pointer; border-left: 4px solid #667eea; transition: all 0.3s ease;" 
-       onclick="alert('Click detected!'); trackAndOpenCPAleadOffer('${offer.id}', '${escapeHtml(offer.link)}', JSON.parse('${offerJson}'))"
          onclick="trackAndOpenCPAleadOffer('${offer.id}', '${escapeHtml(offer.link)}', JSON.parse('${offerJson}'))">
         <div style="display: flex; align-items: flex-start; gap: 15px; margin-bottom: 15px;">
             <div style="font-size: 2.5rem; flex-shrink: 0;">${offer.icon}</div>

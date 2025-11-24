@@ -71,46 +71,44 @@ window.showPage = function(pageName) {
     }
     
     // Load wall page content
-    if (pageName === 'wall') {
-        console.log('🎯 Loading Wall page...');
-        
-        // ⭐ CHECK IF USER HAS SEEN GUIDELINES (First-time check)
-        checkFirstWallVisit();
-        
-        if (window.isAdminMode) {
-            // Admin sees templates
-            const wallContent = document.getElementById('wall-content');
-            if (wallContent) {
-                wallContent.innerHTML = '<div class="empty-state"><div class="icon">📝</div><h3>Select a Template</h3><p>Choose a template from the sidebar to start creating your content.</p></div>';
-            }
-        } else {
-            // Regular users see offers
-            console.log('💰 User mode - loading offers');
-            
-            // Clear any existing content first
-            const wallContent = document.getElementById('wall-content');
-            if (wallContent) {
-                wallContent.innerHTML = `
-                    <div id="public-wall">
-                        <h2 style="color: #00d4ff; margin-bottom: 30px; font-size: 2rem;">💸 Available Offers</h2>
-                        <div class="grid grid-2" id="wall-items">
-                            <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 20px;">
-                                <div class="loading-spinner"></div>
-                                <p style="margin-top: 20px; font-size: 1.1rem;">Preparing offers...</p>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-            
-            // Use setTimeout to ensure DOM is ready
-            setTimeout(() => {
-                if (typeof loadPublicWall === 'function') {
-                    loadPublicWall();
-                }
-            }, 100);
+    // In app.js - Update the wall page section
+if (pageName === 'wall') {
+    console.log('🎯 Loading Wall page with card layout...');
+    
+    // ⭐ CHECK IF USER HAS SEEN GUIDELINES (First-time check)
+    checkFirstWallVisit();
+    
+    if (window.isAdminMode) {
+        // Admin sees templates
+        const wallContent = document.getElementById('wall-content');
+        if (wallContent) {
+            wallContent.innerHTML = '<div class="empty-state"><div class="icon">📝</div><h3>Select a Template</h3><p>Choose a template from the sidebar to start creating your content.</p></div>';
         }
+    } else {
+        // Regular users see offers in card layout
+        console.log('💰 User mode - loading offers in card layout');
+        
+        // Clear any existing content first
+        const wallContent = document.getElementById('wall-content');
+        if (wallContent) {
+            wallContent.innerHTML = `
+                <div id="public-wall">
+                    <div style="text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px; font-size: 1.1rem;">Preparing offer networks...</p>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+            if (typeof loadPublicWall === 'function') {
+                loadPublicWall();
+            }
+        }, 100);
     }
+}
     
     // Scroll to top
     window.scrollTo(0, 0);

@@ -71,7 +71,7 @@ function displayAffiliateOffers() {
                         <span style="background: rgba(118,75,162,0.15); color: #764ba2; padding: 6px 12px; border-radius: 16px;">
                             ${offer.type}
                         </span>
-                        ${offer.region ? `<span style="background: rgba(255,51,153,0.15); color: #ff3399; padding: 6px 12px; border-radius: 16px;">🌍 ${offer.region}</span>` : ''}
+                        ${offer.region ? `<span style="background: rgba(255,51,153,0.15); color: #ff3399; padding: 6px 12px; border-radius: 16px;">🌐 ${offer.region}</span>` : ''}
                     </div>
                 </div>
             </div>
@@ -118,104 +118,451 @@ function escapeHtml(text) {
 }
 
 function loadPublicWall() {
-    console.log('📄 Loading public wall with all offers...');
+    console.log('📄 Loading public wall with clickable network cards...');
     
     const wallContent = document.getElementById('wall-content');
     
-    // Generate HTML for different offer types
-    const wallItemsHtml = window.wallItems && window.wallItems.length > 0 
-        ? window.wallItems.map((item, index) => `
-            <div class="card" style="cursor: pointer;" onclick="openWallItem(${index})">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                    <span style="font-size: 2rem;">${item.type === 'survey' ? '📊' : '🎁'}</span>
-                    <div>
-                        <h3 style="color: #00d4ff; margin: 0;">${item.title}</h3>
-                        <p style="color: #888; font-size: 0.85rem; margin: 5px 0 0 0;">${item.description}</p>
-                    </div>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #888; font-size: 0.85rem;">⏱️ ${item.duration || '2-3 min'}</span>
-                    ${item.reward ? `<span style="background: rgba(0,212,255,0.1); color: #00d4ff; padding: 5px 12px; border-radius: 20px; font-size: 0.85rem;">💰 ${item.reward}</span>` : ''}
-                </div>
-            </div>
-        `).join('')
-        : '<div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 20px;"><div class="icon" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px;">🔭</div><p style="color: #666; margin: 0;">No custom content available yet</p></div>';
+    // Get ACTUAL offer counts from loaded data
+    const customOffersCount = (window.ogadsOffers && window.ogadsOffers.length) || 0;
+    const affiliateOffersCount = (window.affiliateOffers && window.affiliateOffers.length) || 0;
+    const kiwiwallOffersCount = 'iframe'; // KiwiWall uses iframe, no count available
+    const cpagripOffersCount = (window.cpagripOffers && window.cpagripOffers.length) || 0;
+    const cpaleadOffersCount = (window.cpaLeadOffers && window.cpaLeadOffers.length) || 0;
 
-    // Generate affiliate offers HTML
-    const affiliateOffersHtml = displayAffiliateOffers();
-    
-    // Create the complete wall content structure
+    console.log('📊 Offer Counts:', {
+        custom: customOffersCount,
+        affiliate: affiliateOffersCount,
+        kiwiwall: kiwiwallOffersCount,
+        cpagrip: cpagripOffersCount,
+        cpalead: cpaleadOffersCount
+    });
+
+    // Create the clickable card-based wall content structure
     wallContent.innerHTML = `
         <div id="public-wall">
-            <!-- Custom Surveys & Offers -->
-            <h2 style="color: #00d4ff; margin-bottom: 30px; font-size: 2rem;">📋 Custom Surveys & Offers</h2>
-            <div class="grid grid-2" id="wall-items">${wallItemsHtml}</div>
+            <h2 style="color: #00d4ff; margin-bottom: 30px; font-size: 2rem; text-align: center;">💸 Available Offer Networks</h2>
+            <p style="text-align: center; color: #888; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto;">
+                Click on any network below to explore offers and start earning rewards
+            </p>
             
-            <!-- Affiliate Offers Section - ALWAYS SHOW THIS -->
-            <h2 style="color: #00ff88; margin: 50px 0 30px 0; font-size: 2rem;">🤝 Partner Offers</h2>
-            <div class="grid grid-2" id="affiliate-offers">
-                ${affiliateOffersHtml}
-            </div>
-
-            <!-- KiwiWall Offers Section -->
-             <h2 style="color: #ffd700; margin: 50px 0 20px 0; font-size: 2rem;">🏆 KiwiWall Offers</h2>
-             <div id="kiwiwall-offers">
-                 <div style="text-align: center; color: #888; padding: 40px;">
-                     <div class="loading-spinner"></div>
-                     <p style="margin-top: 20px;">Loading KiwiWall offers...</p>
+            <div class="networks-grid">
+                <!-- Custom Surveys & Offers Card -->
+                <div class="network-card" onclick="openNetworkPage('custom')">
+                    <div class="network-card-header">
+                        <div class="network-icon">📋</div>
+                        <div class="network-info">
+                            <h3>Custom Surveys & Offers</h3>
+                            <p>Your custom created surveys and offers</p>
+                        </div>
+                    </div>
+                    <div class="network-card-footer">
+                        <div class="network-stats">
+                            <span class="stat-item">⭐ Custom</span>
+                            <span class="stat-item">🎯 Easy</span>
+                        </div>
+                        <div class="offers-count">Available</div>
+                    </div>
                 </div>
-             </div>
-            
-            <!-- ADD THIS NEW CPAGRIP SECTION -->
-            <h2 style="color: #ff6b6b; margin: 50px 0 30px 0; font-size: 2rem;">🔥 CPAgrip Offers</h2>
-            <div class="grid grid-2" id="cpagrip-offers">
-                <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 20px;">Loading CPAgrip offers...</p>
-                </div>
-            </div>   
 
-            <!-- CPAlead Offers Container -->
-            <h2 style="color: #667eea; margin: 50px 0 30px 0; font-size: 2rem;">🎯 Sponsored Offers</h2>
-            <div class="grid grid-2" id="cpalead-offers">
-                <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">
-                    <div class="loading-spinner"></div>
-                    <p style="margin-top: 20px;">Loading CPAlead offers...</p>
+                <!-- Partner Offers Card -->
+                <div class="network-card" onclick="openNetworkPage('affiliate')">
+                    <div class="network-card-header">
+                        <div class="network-icon">🤝</div>
+                        <div class="network-info">
+                            <h3>Partner Offers</h3>
+                            <p>Affiliate offers from trusted partners</p>
+                        </div>
+                    </div>
+                    <div class="network-card-footer">
+                        <div class="network-stats">
+                            <span class="stat-item">💎 Premium</span>
+                            <span class="stat-item">🚀 Fast</span>
+                        </div>
+                        <div class="offers-count">Available</div>
+                    </div>
+                </div>
+
+                <!-- Kiwi-Style Offers Card -->
+                <div class="network-card" onclick="openNetworkPage('kiwiwall')">
+                    <div class="network-card-header">
+                        <div class="network-icon">🏆</div>
+                        <div class="network-info">
+                            <h3>Kiwi-Style Offers</h3>
+                            <p>Premium surveys and high-quality offers</p>
+                        </div>
+                    </div>
+                    <div class="network-card-footer">
+                        <div class="network-stats">
+                            <span class="stat-item">📊 Surveys</span>
+                            <span class="stat-item">💰 High Pay</span>
+                        </div>
+                        <div class="offers-count">Available</div>
+                    </div>
+                </div>
+                
+                <!-- Diamond Offers Card -->
+                <div class="network-card" onclick="openNetworkPage('cpagrip')">
+                    <div class="network-card-header">
+                        <div class="network-icon">💎</div>
+                        <div class="network-info">
+                            <h3>Diamond Offers</h3>
+                            <p>High payout offers and surveys</p>
+                        </div>
+                    </div>
+                    <div class="network-card-footer">
+                        <div class="network-stats">
+                            <span class="stat-item">💵 High Payout</span>
+                            <span class="stat-item">🌐 Global</span>
+                        </div>
+                        <div class="offers-count">Available</div>
+                    </div>
+                </div>
+
+                <!-- CPAlead Offers Card -->
+                <div class="network-card" onclick="openNetworkPage('cpalead')">
+                    <div class="network-card-header">
+                        <div class="network-icon">🎯</div>
+                        <div class="network-info">
+                            <h3>Sponsored Offers</h3>
+                            <p>CPA network offers and surveys</p>
+                        </div>
+                    </div>
+                    <div class="network-card-footer">
+                        <div class="network-stats">
+                            <span class="stat-item">📱 Mobile</span>
+                            <span class="stat-item">⚡ Instant</span>
+                        </div>
+                        <div class="offers-count">Available</div>
+                    </div>
                 </div>
             </div>
         </div>
     `;
-          
-    console.log('✅ [Wall] DOM structure created with all offer sections');
     
-    // Load CPAlead offers
-    setTimeout(() => {
-        const cpaleadContainer = document.getElementById('cpalead-offers');
-        if (cpaleadContainer && typeof window.loadCPAleadOffers === 'function') {
-            console.log('🚀 [Wall] Calling loadCPAleadOffers...');
-            window.loadCPAleadOffers();
-        }
-    }, 300);
+    console.log('✅ [Wall] Clickable card layout created with dynamic counts');
+    
+    // Pre-load offers in background if not already loaded
+    preloadOffers();
+}
 
-    // Load KiwiWall offers - THIS WAS THE MISSING PIECE!
+// NEW FUNCTION: Pre-load offers in background
+function preloadOffers() {
+    console.log('🔄 Pre-loading offers in background...');
+    
+    // Load OGAds if not loaded
+    if (!window.ogadsOffers && typeof loadOGAdsOffers === 'function') {
+        console.log('📡 Pre-loading OGAds offers...');
+        loadOGAdsOffers().then(() => {
+            console.log('✅ OGAds pre-loaded:', window.ogadsOffers?.length || 0);
+            updateOfferCounts();
+        }).catch(err => {
+            console.error('❌ OGAds pre-load failed:', err);
+        });
+    }
+    
+    // Load CPAgrip if not loaded
+    if (!window.cpagripOffers && typeof window.loadCPAgripOffers === 'function') {
+        console.log('📡 Pre-loading CPAgrip offers...');
+        // Don't actually call it here - it will load when user clicks the card
+        // This prevents unnecessary API calls
+    }
+    
+    // Load CPAlead if not loaded
+    if (!window.cpaLeadOffers && typeof window.loadCPAleadOffers === 'function') {
+        console.log('📡 Pre-loading CPAlead offers...');
+        // Don't actually call it here - it will load when user clicks the card
+        // This prevents unnecessary API calls
+    }
+}
+
+// NEW FUNCTION: Update offer counts dynamically
+function updateOfferCounts() {
+    console.log('🔄 Updating offer counts...');
+    
+    const counters = {
+        custom: document.querySelector('.network-card:nth-child(1) .offers-count'),
+        affiliate: document.querySelector('.network-card:nth-child(2) .offers-count'),
+        cpagrip: document.querySelector('.network-card:nth-child(4) .offers-count'),
+        cpalead: document.querySelector('.network-card:nth-child(5) .offers-count')
+    };
+    
+    if (counters.custom && window.ogadsOffers) {
+        counters.custom.textContent = window.ogadsOffers.length + ' offers';
+    }
+    
+    if (counters.affiliate && window.affiliateOffers) {
+        counters.affiliate.textContent = window.affiliateOffers.length + ' offers';
+    }
+    
+    if (counters.cpagrip && window.cpagripOffers) {
+        counters.cpagrip.textContent = window.cpagripOffers.length + ' offers';
+    }
+    
+    if (counters.cpalead && window.cpaLeadOffers) {
+        counters.cpalead.textContent = window.cpaLeadOffers.length + ' offers';
+    }
+    
+    console.log('✅ Offer counts updated');
+}
+
+// Function to open a specific network page
+window.openNetworkPage = function(network) {
+    console.log('🚀 Opening network page:', network);
+    console.log('📊 Available functions:', {
+        loadOGAdsOffers: typeof loadOGAdsOffers,
+        loadCPAleadOffers: typeof window.loadCPAleadOffers,
+        loadCPAgripOffers: typeof window.loadCPAgripOffers,
+        loadKiwiwallOffers: typeof window.loadKiwiwallOffers
+    });
+    
+    const wallContent = document.getElementById('wall-content');
+    if (!wallContent) {
+        console.error('❌ wall-content not found!');
+        return;
+    }
+    
+    switch(network) {
+        case 'custom':
+            showCustomOffersPage();
+            break;
+        case 'affiliate':
+            showAffiliateOffersPage();
+            break;
+        case 'kiwiwall':
+            showKiwiwallOffersPage();
+            break;
+        case 'cpagrip':
+            showCPAgripOffersPage();
+            break;
+        case 'cpalead':
+            showCPAleadOffersPage();
+            break;
+        default:
+            console.error('❌ Unknown network:', network);
+    }
+    
+    // Debug: Check if container was created
     setTimeout(() => {
-        const kiwiwallContainer = document.getElementById('kiwiwall-offers');
-        if (kiwiwallContainer && typeof window.loadKiwiwallOffers === 'function') {
-            console.log('🚀 [Wall] Calling loadKiwiwallOffers...');
+        console.log('🔍 Checking containers after page load:');
+        console.log('  - #wall-items:', !!document.getElementById('wall-items'));
+        console.log('  - #affiliate-offers:', !!document.getElementById('affiliate-offers'));
+        console.log('  - #kiwiwall-offers-list:', !!document.getElementById('kiwiwall-offers-list'));
+        console.log('  - #cpagrip-offers:', !!document.getElementById('cpagrip-offers'));
+        console.log('  - #cpalead-offers:', !!document.getElementById('cpalead-offers'));
+    }, 200);
+};
+
+// Function to go back to main wall
+window.goBackToWall = function() {
+    console.log('🔙 Going back to main wall');
+    loadPublicWall();
+};
+
+// Network-specific page functions - FIXED WITH CORRECT CONTAINER IDs
+function showCustomOffersPage() {
+    const wallContent = document.getElementById('wall-content');
+    wallContent.innerHTML = `
+        <div class="network-page">
+            <button onclick="goBackToWall()" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Networks
+            </button>
+            
+            <div class="network-page-header">
+                <div class="network-page-icon">📋</div>
+                <div>
+                    <h2>Custom Surveys & Offers</h2>
+                    <p>Your custom created surveys and offers</p>
+                </div>
+            </div>
+            
+            <div class="network-page-content">
+                <div class="grid grid-2" id="wall-items">
+                    <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px;">Loading custom offers...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Load OGAds offers into this container
+    console.log('🎯 Loading OGAds offers for custom section...');
+    setTimeout(() => {
+        if (typeof loadOGAdsOffers === 'function') {
+            loadOGAdsOffers();
+        } else {
+            console.error('❌ loadOGAdsOffers function not found');
+        }
+    }, 100);
+}
+
+function showAffiliateOffersPage() {
+    const wallContent = document.getElementById('wall-content');
+    wallContent.innerHTML = `
+        <div class="network-page">
+            <button onclick="goBackToWall()" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Networks
+            </button>
+            
+            <div class="network-page-header">
+                <div class="network-page-icon">🤝</div>
+                <div>
+                    <h2>Partner Offers</h2>
+                    <p>Affiliate offers from trusted partners</p>
+                </div>
+            </div>
+            
+            <div class="network-page-content">
+                <div class="grid grid-2" id="affiliate-offers">
+                    <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px;">Loading partner offers...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Display affiliate offers immediately
+    console.log('🤝 Displaying affiliate offers...');
+    setTimeout(() => {
+        const container = document.getElementById('affiliate-offers');
+        if (container) {
+            container.innerHTML = displayAffiliateOffers();
+        } else {
+            console.error('❌ Affiliate container not found after timeout');
+        }
+    }, 100);
+}
+
+function showKiwiwallOffersPage() {
+    const wallContent = document.getElementById('wall-content');
+    wallContent.innerHTML = `
+        <div class="network-page">
+            <button onclick="goBackToWall()" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Networks
+            </button>
+            
+            <div class="network-page-header">
+                <div class="network-page-icon">🏆</div>
+                <div>
+                    <h2>Kiwi-Style Offers</h2>
+                    <p>Premium surveys and high-quality offers</p>
+                </div>
+            </div>
+            
+            <div class="network-page-content">
+                <div id="kiwiwall-offers-list">
+                    <div style="text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px;">Loading KiwiWall offers...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Load KiwiWall offers
+    console.log('🏆 Loading KiwiWall offers...');
+    setTimeout(() => {
+        if (typeof window.loadKiwiwallOffers === 'function') {
             window.loadKiwiwallOffers();
         } else {
-            console.error('❌ [Wall] KiwiWall container or function not found');
+            console.error('❌ loadKiwiwallOffers function not found');
         }
-    }, 500);
+    }, 100);
+}
 
+function showCPAgripOffersPage() {
+    const wallContent = document.getElementById('wall-content');
+    wallContent.innerHTML = `
+        <div class="network-page">
+            <button onclick="goBackToWall()" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Networks
+            </button>
+            
+            <div class="network-page-header">
+                <div class="network-page-icon">💎</div>
+                <div>
+                    <h2>Diamond Offers</h2>
+                    <p>High payout offers and surveys</p>
+                </div>
+            </div>
+            
+            <div class="network-page-content">
+                <div class="grid grid-2" id="cpagrip-offers">
+                    <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px;">Loading CPAgrip offers...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
     // Load CPAgrip offers
+    console.log('🔥 Loading CPAgrip offers...');
     setTimeout(() => {
-        const cpagripContainer = document.getElementById('cpagrip-offers');
-        if (cpagripContainer && typeof window.loadCPAgripOffers === 'function') {
-            console.log('🚀 [Wall] Calling loadCPAgripOffers...');
+        if (typeof window.loadCPAgripOffers === 'function') {
             window.loadCPAgripOffers();
+        } else {
+            console.error('❌ loadCPAgripOffers function not found');
         }
-    }, 700);
+    }, 100);
+}
+
+function showCPAleadOffersPage() {
+    const wallContent = document.getElementById('wall-content');
+    wallContent.innerHTML = `
+        <div class="network-page">
+            <button onclick="goBackToWall()" class="back-button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+                Back to Networks
+            </button>
+            
+            <div class="network-page-header">
+                <div class="network-page-icon">🎯</div>
+                <div>
+                    <h2>Sponsored Offers</h2>
+                    <p>CPA network offers and surveys</p>
+                </div>
+            </div>
+            
+            <div class="network-page-content">
+                <div class="grid grid-2" id="cpalead-offers">
+                    <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 60px 20px;">
+                        <div class="loading-spinner"></div>
+                        <p style="margin-top: 20px;">Loading CPAlead offers...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Load CPAlead offers
+    console.log('🎯 Loading CPAlead offers...');
+    setTimeout(() => {
+        if (typeof window.loadCPAleadOffers === 'function') {
+            window.loadCPAleadOffers();
+        } else {
+            console.error('❌ loadCPAleadOffers function not found');
+        }
+    }, 100);
 }
 
 // Initialize wallItems if it doesn't exist

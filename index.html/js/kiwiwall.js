@@ -7,7 +7,7 @@ window.kiwiwallConfig = {
 window.loadKiwiwallOffers = function() {
     console.log('🔄 Loading KiwiWall iframe...');
     
-    const container = document.getElementById('kiwiwall-offers');
+    const container = document.getElementById('kiwiwall-offers-list');
     if (!container) {
         console.error('❌ KiwiWall container not found!');
         return;

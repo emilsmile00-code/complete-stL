@@ -185,8 +185,9 @@ function estimateDuration(offerType) {
 // ======================================
 
 function displayOGAdsOffers(offers) {
-    console.log('🎨 Displaying offers:', offers.length);
+    console.log('🎨 Displaying offers in card layout:', offers.length);
     
+    // Target the wall-items container inside the Custom Surveys card
     const wallItemsContainer = document.getElementById('wall-items');
     
     if (!wallItemsContainer) {

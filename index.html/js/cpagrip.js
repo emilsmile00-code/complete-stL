@@ -13,13 +13,32 @@ const CPAGRIP_CONFIG = {
 };
 
 // Function to load CPAgrip offers
+// Function to load CPAgrip offers - FIXED VERSION
 window.loadCPAgripOffers = async function() {
-    console.log('🔄 Loading CPAgrip offers...');
+    console.log('📄 Loading CPAgrip offers...');
+    
+    // Wait a bit longer for container to be created
+    await new Promise(resolve => setTimeout(resolve, 150));
     
     const container = document.getElementById('cpagrip-offers');
     if (!container) {
         console.error('❌ CPAgrip offers container not found');
-        return;
+        console.log('🔍 Available containers:', {
+            'wall-items': !!document.getElementById('wall-items'),
+            'affiliate-offers': !!document.getElementById('affiliate-offers'),
+            'kiwiwall-offers-list': !!document.getElementById('kiwiwall-offers-list'),
+            'cpagrip-offers': !!document.getElementById('cpagrip-offers'),
+            'cpalead-offers': !!document.getElementById('cpalead-offers')
+        });
+        
+        // Try one more time after additional delay
+        await new Promise(resolve => setTimeout(resolve, 200));
+        const containerRetry = document.getElementById('cpagrip-offers');
+        if (!containerRetry) {
+            console.error('❌ CPAgrip container still not found after retry');
+            return;
+        }
+        console.log('✅ Found CPAgrip container on retry');
     }
 
     try {
@@ -111,7 +130,7 @@ window.loadCPAgripOffers = async function() {
                 category: category || 'General',
                 geo: geo || 'Global',
                 device: device || 'Any',
-                type: 'Premium Offer', // Changed from 'CPAgrip Offer'
+                type: 'Premium Offer',
                 duration: '2-10 min',
                 icon: getCPAgripIcon(category),
                 provider: 'cpagrip'
@@ -125,9 +144,9 @@ window.loadCPAgripOffers = async function() {
         console.error('❌ Error loading CPAgrip offers:', error);
         
         // Show error message - NO FALLBACK OFFERS
-        const container = document.getElementById('cpagrip-offers');
-        if (container) {
-            container.innerHTML = `
+        const containerFinal = document.getElementById('cpagrip-offers');
+        if (containerFinal) {
+            containerFinal.innerHTML = `
                 <div style="grid-column: 1 / -1; text-align: center; color: #888; padding: 40px;">
                     <div class="icon" style="font-size: 4rem; opacity: 0.3; margin-bottom: 20px;">⚠️</div>
                     <h3 style="color: #888; margin-bottom: 10px;">Temporarily unavailable</h3>
